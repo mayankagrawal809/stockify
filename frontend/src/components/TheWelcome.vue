@@ -1,13 +1,34 @@
 <script setup lang="ts">
+import { ref, onMounted } from 'vue';
+import axios from 'axios';
 import WelcomeItem from './WelcomeItem.vue'
 import DocumentationIcon from './icons/IconDocumentation.vue'
 import ToolingIcon from './icons/IconTooling.vue'
 import EcosystemIcon from './icons/IconEcosystem.vue'
 import CommunityIcon from './icons/IconCommunity.vue'
 import SupportIcon from './icons/IconSupport.vue'
+
+const message = ref('');
+
+// Fetch the message from the backend API when the component is mounted
+const fetchMessage = async () => {
+  try {
+    const response = await axios.get('http://localhost:3000/api/data');
+    message.value = response.data.message;
+  } catch (error) {
+    console.error('Error fetching data from backend:', error);
+  }
+};
+
+// Call fetchMessage when the component is mounted
+onMounted(() => {
+  fetchMessage();
+});
+
 </script>
 
 <template>
+  <p>{{ message }}</p>
   <WelcomeItem>
     <template #icon>
       <DocumentationIcon />
