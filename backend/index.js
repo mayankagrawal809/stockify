@@ -60,6 +60,41 @@ app.post('/api/login', async (req, res) => {
     });
     res.json({ message: 'Login successful', token });
 });
+// In-memory list of clients with their subscribed stock
+let clients = [];
+
+// Endpoint to handle SSE connections for a specific stock
+app.get('/api/stock-updates/:ticker', (req, res) => {
+    const ticker = req.params.ticker;
+
+    // Set headers to establish SSE connection
+    res.setHeader('Content-Type', 'text/event-stream');
+    res.setHeader('Cache-Control', 'no-cache');
+    res.setHeader('Connection', 'keep-alive');
+
+    // Save the connection for future updates
+    const newClient = { ticker, res };
+    clients.push(newClient);
+
+    // Remove client when connection closes
+    req.on('close', () => {
+        clients = clients.filter((client) => client !== newClient);
+    });
+});
+
+const supportedStocks = ['GOOG', 'TSLA', 'AMZN', 'META', 'NVDA'];
+function sendStockUpdates() {
+    supportedStocks.forEach((ticker) => {
+        const price = (Math.random() * 1000).toFixed(2);
+
+        // Notify only the clients subscribed to this specific ticker
+        clients
+            .filter((client) => client.ticker === ticker)
+            .forEach((client) =>
+                client.res.write(`data: ${JSON.stringify({ ticker, price })}\n\n`)
+            );
+    });
+}
 
 function authenticateToken(req, res, next) {
     const authHeader = req.headers['authorization'];
@@ -77,6 +112,7 @@ function authenticateToken(req, res, next) {
         next();
     });
 }
+setInterval(sendStockUpdates, 5000);
 
 app.listen(port, () => {
     console.log(`Server is running on port ${port}`);
