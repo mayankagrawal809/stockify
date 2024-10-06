@@ -17,6 +17,7 @@
 
 <script lang="ts">
 import { defineComponent, ref } from 'vue';
+import axios from 'axios';
 
 export default defineComponent({
   name: 'LoginView',
@@ -24,11 +25,16 @@ export default defineComponent({
     const username = ref('');
     const password = ref('');
 
-    const login = () => {
-      // Handle the login logic here
-      console.log('Username:', username.value);
-      console.log('Password:', password.value);
-      // Add your authentication logic here
+    const login = async () => {
+      try {
+        const response = await axios.post('http://localhost:3000/api/login', {
+          username: username.value,
+          password: password.value,
+        });
+
+      } catch (error) {
+        console.error('Login failed:', error);
+      }
     };
 
     return {
