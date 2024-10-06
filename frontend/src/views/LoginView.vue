@@ -1,7 +1,6 @@
 <template>
   <div>
-    <h1>Login Page</h1>
-    <form @submit.prevent="login">
+      <form @submit.prevent="login">
       <v-card width="1000px">
         <v-card-title>Login</v-card-title>
         <v-card-text>
