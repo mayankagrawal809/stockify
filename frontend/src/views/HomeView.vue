@@ -26,15 +26,29 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, onBeforeUnmount } from 'vue';
+import { defineComponent, ref, onBeforeUnmount, onMounted } from 'vue';
+import axios from 'axios';
 
 export default defineComponent({
   name: 'HomeView',
   setup() {
-    const supportedStocks = ['GOOG', 'TSLA', 'AMZN', 'META', 'NVDA'];
+    const supportedStocks = ref<string[]>([]);
     const selectedStock = ref<string | null>(null);
     const stockPrice = ref<number | null>(null);
     let eventSource: EventSource | null = null;
+    const token = localStorage.getItem('jwt_token');
+    const fetchSupportedStocks = async () => {
+      try {
+        const response = await axios.get('http://localhost:3000/api/supported-stocks', {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        supportedStocks.value = response.data.stocks;
+      } catch (error) {
+        console.error('Error fetching supported stocks:', error);
+      }
+    };
 
     const subscribeToStock = () => {
       // Close any previous event source
@@ -44,7 +58,7 @@ export default defineComponent({
 
       if (selectedStock.value) {
         // Set up the SSE connection for the selected stock
-        eventSource = new EventSource(`http://localhost:3000/api/stock-updates/${selectedStock.value}`);
+        eventSource = new EventSource(`http://localhost:3000/api/stock-updates/${selectedStock.value}?token=${token}`);
         
         eventSource.onmessage = (event) => {
           const data = JSON.parse(event.data);
@@ -64,6 +78,10 @@ export default defineComponent({
       if (eventSource) {
         eventSource.close();
       }
+    });
+
+    onMounted(() => {
+      fetchSupportedStocks();
     });
 
     return {
