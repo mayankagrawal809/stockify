@@ -48,12 +48,23 @@ npm install
 ```bash
 npm run dev
 ```
-6. Open a seperate terminal, don't close the previous terminal
+6. Open a seperate terminal and go to stockify folder , don't close the previous terminal
 
 7. Start the frontend server in development mode in the new terminal
 ```bash
-cd ../frontend
-npm run serve
+cd frontend
+npm run dev
 ```
 8. Open your browser and navigate to link given by frontend server. Usually it is http://localhost:5173/ 
+9. The username and passwords are:
+```bash
+username: admin
+password: admin
+
+username: user1
+password: password1
+
+username: user2
+password: password2
+```
 
