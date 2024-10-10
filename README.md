@@ -15,8 +15,8 @@ stokify/
 ## Prerequisites
 Before you begin, ensure you have the following installed on your machine:
 
-Node.js
-npm (Node Package Manager)
+Node.js,
+npm (Node Package Manager),
 Git (for cloning the repository)
 
 ## Steps to start the project
