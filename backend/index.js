@@ -32,7 +32,28 @@ app.use(cors());
 app.use(express.json());
 
 
+function verifyToken(token, res, callback) {
+    if (!token) {
+        return res.status(401).json({ message: 'Access denied, no token provided' });
+    }
 
+    jwt.verify(token, JWT_SECRET, (err, user) => {
+        if (err) {
+            return res.status(403).json({ message: 'Invalid token' });
+        }
+        callback(user);
+    });
+}
+
+function authenticateToken(req, res, next) {
+    const authHeader = req.headers['authorization'] || req.headers['Authorization'];
+    const token = authHeader && authHeader.split(' ')[1];
+
+    verifyToken(token, res, (user) => {
+        req.user = user;
+        next();
+    });
+}
 
 app.post('/api/login', async (req, res) => {
     const { username, password } = req.body;
@@ -65,20 +86,27 @@ let clients = [];
 
 // Endpoint to handle SSE connections for a specific stock
 app.get('/api/stock-updates/:ticker', (req, res) => {
-    const ticker = req.params.ticker;
+    // Had to use query parameter to pass token as setting headers 
+    // in EventSource is not supported.
+    const token = req.query.token;
 
-    // Set headers to establish SSE connection
-    res.setHeader('Content-Type', 'text/event-stream');
-    res.setHeader('Cache-Control', 'no-cache');
-    res.setHeader('Connection', 'keep-alive');
 
-    // Save the connection for future updates
-    const newClient = { ticker, res };
-    clients.push(newClient);
+    verifyToken(token, res, (user) => {
+        const ticker = req.params.ticker;
 
-    // Remove client when connection closes
-    req.on('close', () => {
-        clients = clients.filter((client) => client !== newClient);
+        // Set headers to establish SSE connection
+        res.setHeader('Content-Type', 'text/event-stream');
+        res.setHeader('Cache-Control', 'no-cache');
+        res.setHeader('Connection', 'keep-alive');
+
+        // Add client to the list of subscribed clients
+        const newClient = { ticker, res };
+        clients.push(newClient);
+
+        // Remove client when connection closes
+        req.on('close', () => {
+            clients = clients.filter((client) => client !== newClient);
+        });
     });
 });
 
@@ -95,24 +123,8 @@ function sendStockUpdates() {
     });
 }
 
-function authenticateToken(req, res, next) {
 
-    const authHeader = req.headers['authorization'] || req.headers['Authorization'];
-    const token = authHeader && authHeader.split(' ')[1];
-
-    if (!token) {
-        return res.status(401).json({ message: 'Access denied, no token provided' });
-    }
-
-    jwt.verify(token, JWT_SECRET, (err, user) => {
-        if (err) {
-            return res.status(403).json({ message: 'Invalid token' });
-        }
-        req.user = user;
-        next();
-    });
-}
-setInterval(sendStockUpdates, 2000);
+setInterval(sendStockUpdates, 1000);
 
 app.listen(port, () => {
     console.log(`Server is running on port ${port}`);
