@@ -21,6 +21,11 @@ Git (for cloning the repository)
 
 ## Steps to start the project
 
+0. Install Nodemon globally (Skip if already installed)
+```bash
+npm install -g nodemon
+```
+
 1. Clone the repository
 ```bash
 git clone https://github.com/mayankagrawal809/stockify.git
@@ -43,12 +48,14 @@ npm install
 ```bash
 npm run dev
 ```
-6. Start the frontend server in development mode
+6. Open a seperate terminal, don't close the previous terminal
+
+7. Start the frontend server in development mode in the new terminal
 ```bash
 cd ../frontend
 npm run serve
 ```
-7. Open your browser and navigate to link given by frontend server. Usually it is http://localhost:5173/ 
+8. Open your browser and navigate to link given by frontend server. Usually it is http://localhost:5173/ 
 
 
 
