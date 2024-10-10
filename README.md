@@ -1,6 +1,8 @@
 # Stokify
 
 Stokify is a full-stack web application with a Vue.js frontend and a Node.js + Express backend. The main idea behind this app is to use SSE (Server-Sent Events) to stream stock prices in real-time. Obviously, this is just a demo project and all the valeus of stock prices are randomly generated.
+Also note that there isn't any db connected to this project for now. All values are stored locally.
+
 
 ## Project Structure
 
@@ -56,7 +58,7 @@ cd frontend
 npm run dev
 ```
 8. Open your browser and navigate to link given by frontend server. Usually it is http://localhost:5173/ 
-9. The username and passwords are:
+9. The username and passwords are given here for 3 users:
 ```bash
 username: admin
 password: admin
