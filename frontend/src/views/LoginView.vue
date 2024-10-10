@@ -18,12 +18,14 @@
 <script lang="ts">
 import { defineComponent, ref } from 'vue';
 import axios from 'axios';
+import { useRouter } from 'vue-router';
 
 export default defineComponent({
   name: 'LoginView',
   setup() {
     const username = ref('');
     const password = ref('');
+    const router = useRouter();
 
     const login = async () => {
       try {
@@ -31,6 +33,9 @@ export default defineComponent({
           username: username.value,
           password: password.value,
         });
+      const token = response.data.token;
+      localStorage.setItem('jwt_token', token);  // Store JWT in localStorage
+      router.push({ name: 'home' }); 
 
       } catch (error) {
         console.error('Login failed:', error);
