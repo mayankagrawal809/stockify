@@ -2,7 +2,7 @@
   <v-app>
     <v-main>
       <v-container>
-        <v-card elevation="2" class="mb-5">
+        <v-card elevation="2" class="mb-5" width="500px">
           <v-card-title>Subscribe to a Stock</v-card-title>
           <v-card-text>
             <v-select
@@ -26,7 +26,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, onBeforeUnmount, onMounted } from 'vue';
+import { defineComponent, ref, onMounted, onBeforeUnmount } from 'vue';
 import axios from 'axios';
 
 export default defineComponent({
@@ -35,14 +35,14 @@ export default defineComponent({
     const supportedStocks = ref<string[]>([]);
     const selectedStock = ref<string | null>(null);
     const stockPrice = ref<number | null>(null);
+    
     let eventSource: EventSource | null = null;
     const token = localStorage.getItem('jwt_token');
+
     const fetchSupportedStocks = async () => {
       try {
         const response = await axios.get('http://localhost:3000/api/supported-stocks', {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+          headers: { Authorization: `Bearer ${token}` },
         });
         supportedStocks.value = response.data.stocks;
       } catch (error) {
@@ -50,39 +50,38 @@ export default defineComponent({
       }
     };
 
-    const subscribeToStock = () => {
-      // Close any previous event source
+    // Handle SSE connection for stock updates
+    const setupStockUpdates = (stock: string) => {
+      eventSource = new EventSource(`http://localhost:3000/api/stock-updates/${stock}?token=${token}`);
+
+      eventSource.onmessage = (event) => {
+        const data = JSON.parse(event.data);
+        stockPrice.value = data.price;
+      };
+
+      eventSource.onerror = () => {
+        console.error('SSE connection error');
+        closeEventSource();
+      };
+    };
+
+    const closeEventSource = () => {
       if (eventSource) {
         eventSource.close();
-      }
-
-      if (selectedStock.value) {
-        // Set up the SSE connection for the selected stock
-        eventSource = new EventSource(`http://localhost:3000/api/stock-updates/${selectedStock.value}?token=${token}`);
-        
-        eventSource.onmessage = (event) => {
-          const data = JSON.parse(event.data);
-          stockPrice.value = data.price; // Update the price for the selected stock
-        };
-
-        eventSource.onerror = () => {
-          console.error('SSE connection error');
-          if (eventSource) {
-            eventSource.close();
-          }
-        };
+        eventSource = null;
       }
     };
 
-    onBeforeUnmount(() => {
-      if (eventSource) {
-        eventSource.close();
+    const subscribeToStock = () => {
+      if (selectedStock.value) {
+        closeEventSource(); 
+        setupStockUpdates(selectedStock.value);
       }
-    });
+    };
 
-    onMounted(() => {
-      fetchSupportedStocks();
-    });
+    onMounted(fetchSupportedStocks);
+
+    onBeforeUnmount(closeEventSource);
 
     return {
       supportedStocks,
@@ -95,5 +94,5 @@ export default defineComponent({
 </script>
 
 <style scoped>
-/* Add any styles needed for better UI */
+/* Scoped styles to improve UI, if necessary */
 </style>
