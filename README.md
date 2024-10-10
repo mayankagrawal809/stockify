@@ -57,5 +57,3 @@ npm run serve
 ```
 8. Open your browser and navigate to link given by frontend server. Usually it is http://localhost:5173/ 
 
-
-
