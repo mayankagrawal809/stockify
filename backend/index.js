@@ -74,7 +74,7 @@ app.get('/api/supported-stocks', authenticateToken, (req, res) => {
 });
 
 // Stock updates via SSE (Server-Sent Events) 
-// In productiion, this should be done via websockets too.
+// In productiion, this could be done via websockets too.
 app.get('/api/stock-updates/:ticker', (req, res) => {
     const token = req.query.token; // Token passed as a query parameter (EventSource doesn't support headers)
 
