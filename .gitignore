@@ -30,6 +30,7 @@
 
 /frontend/*.tsbuildinfo
 
-# Backed
+# Backend
 /backend/node_modules
 /backend/.DS_Store
+/backend/.env

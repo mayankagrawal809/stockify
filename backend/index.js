@@ -1,8 +1,8 @@
-const express = require('express');
-const app = express();
-const jwt = require('jsonwebtoken');
-const bcrypt = require('bcrypt');
-const cors = require('cors');
+import express from 'express';
+import jwt from 'jsonwebtoken';
+import bcrypt from 'bcrypt';
+import cors from 'cors';
+import { startFetchingStockPrices } from './fetchStockUpdate.js';
 
 // Configuration
 const port = process.env.PORT || 3000;
@@ -14,6 +14,7 @@ const users = [];
 let clients = [];  // Clients subscribed to stock updates
 
 // Middleware
+const app = express();
 app.use(cors());
 app.use(express.json());
 
@@ -114,6 +115,8 @@ function sendStockUpdates() {
 }
 
 setInterval(sendStockUpdates, 1000);
+// Start fetching stock updates
+startFetchingStockPrices();
 
 app.listen(port, () => {
     console.log(`Server is running on port ${port}`);
