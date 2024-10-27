@@ -172,6 +172,8 @@ async function seedRedisDB() {
     }
 }
 
+// For scalling, we can have multiple instances of this service running
+// Each instance can be responsible for a subset of stocks
 async function updateDbWithStockPrices() {
     const kafka = new Kafka({
         brokers: [`${host}:9092`],
