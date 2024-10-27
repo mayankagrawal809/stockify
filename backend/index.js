@@ -151,6 +151,7 @@ async function sendStockUpdatesUsingSSE() {
     await consumer.run({
         eachMessage: async ({ topic, partition, message }) => {
             const trade = JSON.parse(message.value.toString());
+            console.log('In Process of sending trade:', trade);
             if (clients.has(trade.s)) {
                 clients.get(trade.s).forEach((client) => {
                     console.log('Sending trade:', trade, 'to clients');
