@@ -102,22 +102,6 @@ app.get('/api/stock-updates/:ticker', (req, res) => {
     });
 });
 
-// Function to send stock updates to subscribed clients
-// In a real-world scenario, this would be triggered by a change in stock prices
-// Which should be fetched by websockets and update to the clients on change of values
-
-function sendStockUpdates() {
-    supportedStocks.forEach((ticker) => {
-        const price = (Math.random() * 1000).toFixed(2);
-
-        // Notify only clients subscribed to this specific ticker
-        clients
-            .filter((client) => client.ticker === ticker)
-            .forEach((client) =>
-                client.res.write(`data: ${JSON.stringify({ ticker, price })}\n\n`)
-            );
-    });
-}
 // Consume the stock prices from Kafka and send to subscribed clients
 async function sendStockUpdatesUsingSSE() {
     const kafka = new Kafka({
