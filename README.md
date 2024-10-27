@@ -50,12 +50,12 @@ npm install
 cd ../backend
 cp .env.example .env
 ```
-5. Start the docker app and run this command to start kafka and zookeeper (Linux/Mac)
+5. (Linux/Mac) Start the docker app and run this command to start kafka and zookeeper
 ```bash
 export HOST_IP=$(ifconfig | grep -E "([0-9]{1,3}\.){3}[0-9]{1,3}" | grep -v 127.0.0.1 | awk '{ print $2 }' | cut -f2 -d: | head -n1)
 docker-compose up
 ```
-5. Start the docker app and run this command to start kafka and zookeeper (Windows)
+5. (Windows) Start the docker app and run this command in POWERSHELL after going to backend folder to start kafka and zookeeper 
 ```bash
 $env:HOST_IP = (Get-NetIPAddress -AddressFamily IPv4 | Where-Object {$_.InterfaceAlias -notlike "*Loopback*"} | Select-Object -First 1 -ExpandProperty IPAddress)
 docker-compose up
