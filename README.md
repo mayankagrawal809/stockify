@@ -46,6 +46,12 @@ cd frontend
 npm install
 ```
 4. Copy the .env.example file to .env file
+**(Linux/Mac)**
+```bash
+cd ../backend
+cp .env.example .env
+```
+**(Windows)**
 ```bash
 cd ../backend
 cp .env.example .env
@@ -55,7 +61,7 @@ cp .env.example .env
 export HOST_IP=$(ifconfig | grep -E "([0-9]{1,3}\.){3}[0-9]{1,3}" | grep -v 127.0.0.1 | awk '{ print $2 }' | cut -f2 -d: | head -n1)
 docker-compose up
 ```
-5. **(Windows)** Start the docker app and run this command in **POWERSHELL** after going to backend folder to start kafka and zookeeper 
+5. **(Windows)** Use **POWERSHELL** for this: Start the docker app and run this command in powershell after going to backend folder to start kafka and zookeeper 
 ```bash
 $env:HOST_IP = (Get-NetIPAddress -AddressFamily IPv4 | Where-Object {$_.InterfaceAlias -notlike "*Loopback*"} | Select-Object -First 1 -ExpandProperty IPAddress)
 docker-compose up
@@ -92,7 +98,12 @@ username: user2
 password: password2
 ```
 
-12. You can also get real stock prices for US Stock market too. If get a key from https://finnhub.io/register and add it to .env file (.env is a hidden file) in backend folder for e.g. FINNHUB_API_KEY= RandomKEy.
-13. After that change code in `fetchStockUpdate.js` to `const USE_FAKE_WEBSOCKET = false`. around line number 6
-14. Restart both the backend and frontend server
+12. You can also get real stock prices for US Stock market too. If get a key from https://finnhub.io/register and add it to .env file in backend folder for e.g. FINNHUB_API_KEY= RandomKEy.
+
+13. After that change code in `fetchStockUpdate.js` which is in the backend folder to `const USE_FAKE_WEBSOCKET = false`. around line number 6
+
+14. Check the stock prices in the frontend. If US Stock market is closed then you will have to see 
+the crypto prices only.
+
+15. If its not working then, Restart both the backend and frontend server
 
