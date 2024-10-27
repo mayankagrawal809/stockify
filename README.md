@@ -102,7 +102,7 @@ password: password2
 
 13. After that change code in `fetchStockUpdate.js` which is in the backend folder to `const USE_FAKE_WEBSOCKET = false`. around line number 6
 
-14. Check the stock prices in the frontend. If US Stock market is closed then you will have to see 
+14. Check the stock prices in the frontend. It should refelect the changes automatically since we are using nodemon. Please note: If US Stock market is closed then you will have to see 
 the crypto prices only.
 
 15. If its not working then, Restart both the backend and frontend server
