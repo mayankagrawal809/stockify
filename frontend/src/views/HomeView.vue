@@ -56,7 +56,7 @@ export default defineComponent({
 
       eventSource.onmessage = (event) => {
         const data = JSON.parse(event.data);
-        stockPrice.value = data.price;
+        stockPrice.value = data.p;
       };
 
       eventSource.onerror = () => {

@@ -2,12 +2,16 @@ import express from 'express';
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcrypt';
 import cors from 'cors';
-import { startFetchingStockPrices } from './fetchStockUpdate.js';
+import { fetchAndPublishStockPrices } from './fetchStockUpdate.js';
+import { Kafka, logLevel } from 'kafkajs';
+import ip from 'ip';
 
 // Configuration
 const port = process.env.PORT || 3000;
 const JWT_SECRET = process.env.JWT_SECRET || '6F4D26CD5CCB494E8918D137C3CD5'; // Should be stored in .env file
-const supportedStocks = ['GOOG', 'TSLA', 'AMZN', 'META', 'NVDA'];
+const supportedStocks = ['GOOG', 'TSLA', 'BINANCE:BTCUSDT', 'META', 'NVDA'];
+const host = process.env.HOST_IP || ip.address()
+
 
 // In-memory data (In production, use a proper database)
 const users = [];
@@ -89,6 +93,7 @@ app.get('/api/stock-updates/:ticker', (req, res) => {
         // Add client to subscribed list
         const newClient = { ticker, res };
         clients.push(newClient);
+        // fetch from db, Push last price to the client
 
         // Remove client when connection closes
         req.on('close', () => {
@@ -113,10 +118,35 @@ function sendStockUpdates() {
             );
     });
 }
+// Consume the stock prices from Kafka and send to subscribed clients
+async function sendStockUpdatesUsingSSE() {
+    const kafka = new Kafka({
+        logLevel: logLevel.INFO,
+        brokers: [`${host}:9092`],
+        clientId: 'example-consumer',
+    })
+    const consumer = kafka.consumer({ groupId: 'stock-price-group' })
+    await consumer.connect();
+    await consumer.subscribe({ topic: 'stock-price', fromBeginning: false });
 
-setInterval(sendStockUpdates, 1000);
+    await consumer.run({
+        eachMessage: async ({ topic: _topic, partition: _partition, message }) => {
+            const stockPrice = JSON.parse(message.value.toString());
+            clients
+                .filter((client) => client.ticker === stockPrice.s)
+                .forEach((client) => {
+                    client.res.write(`data: ${JSON.stringify(stockPrice)}\n\n`);
+                });
+        },
+    });
+
+
+
+}
+
+sendStockUpdatesUsingSSE();
 // Start fetching stock updates
-startFetchingStockPrices();
+fetchAndPublishStockPrices();
 
 app.listen(port, () => {
     console.log(`Server is running on port ${port}`);
