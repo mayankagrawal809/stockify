@@ -11,9 +11,6 @@
               label="Select a Stock to Subscribe"
               outlined
             ></v-select>
-            <v-btn @click="subscribeToStock" color="primary" class="mt-4">
-              Subscribe
-            </v-btn>
           </v-card-text>
         </v-card>
 
@@ -26,7 +23,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref, onMounted, onBeforeUnmount } from 'vue';
+import { defineComponent, ref, onMounted, onBeforeUnmount, watch } from 'vue';
 import axios from 'axios';
 
 export default defineComponent({
@@ -83,11 +80,20 @@ export default defineComponent({
 
     onBeforeUnmount(closeEventSource);
 
+    watch(selectedStock, (newStock, oldStock) => {
+      if (newStock) {
+        subscribeToStock();
+      } else {
+        // If no stock is selected, close the SSE connection and reset the stock price
+        closeEventSource();
+        stockPrice.value = null;
+      }
+    });
+
     return {
       supportedStocks,
       selectedStock,
       stockPrice,
-      subscribeToStock,
     };
   },
 });

@@ -117,8 +117,7 @@ app.get('/api/stock-updates/:ticker', (req, res) => {
         clientList.push(res);
 
         const stockPrice = await redisClient.get(ticker);
-        res.write(`data: ${JSON.stringify(stockPrice)}\n\n`);
-
+        res.write(`data: ${stockPrice}\n\n`);
 
         // Remove client when connection closes
         req.on('close', () => {
@@ -154,6 +153,7 @@ async function sendStockUpdatesUsingSSE() {
             const trade = JSON.parse(message.value.toString());
             if (clients.has(trade.s)) {
                 clients.get(trade.s).forEach((client) => {
+                    console.log('Sending trade:', trade, 'to clients');
                     client.write(`data: ${trade.p}\n\n`);
                 });
             }
@@ -183,10 +183,11 @@ async function updateDbWithStockPrices() {
     await consumer.connect();
     const topics = Object.values(stockTopics);
     await consumer.subscribe({ topics, fromBeginning: false });
-
+    console.log('Subscribed the updating DB consumer to topics:', topics);
     await consumer.run({
         eachMessage: async ({ topic, partition, message }) => {
             const trade = JSON.parse(message.value.toString());
+            console.log('Updating DB with trade:', trade);
             await redisClient.set(trade.s, trade.p);
         },
     });
