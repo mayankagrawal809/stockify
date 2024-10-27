@@ -9,13 +9,25 @@ import ip from 'ip';
 // Configuration
 const port = process.env.PORT || 3000;
 const JWT_SECRET = process.env.JWT_SECRET || '6F4D26CD5CCB494E8918D137C3CD5'; // Should be stored in .env file
-const supportedStocks = ['GOOG', 'TSLA', 'BINANCE:BTCUSDT', 'META', 'NVDA'];
+const supportedStocks = [
+    'AAPL', 'GOOGL', 'MSFT', 'NVDA', 'TSLA', 'BINANCE:BTCUSDT', 'BINANCE:ETCBTC', 'BINANCE:BNBBTC'
+];
+const stockTopics = {
+    'AAPL': 'AAPL',
+    'GOOGL': 'GOOGL',
+    'MSFT': 'MSFT',
+    'NVDA': 'NVDA',
+    'TSLA': 'TSLA',
+    'BINANCE:BTCUSDT': 'BINANCE_BTCUSDT',
+    'BINANCE:ETCBTC': 'BINANCE_ETCBTC',
+    'BINANCE:BNBBTC': 'BINANCE_BNBBTC',
+};
 const host = process.env.HOST_IP || ip.address()
 
 
 // In-memory data (In production, use a proper database)
 const users = [];
-let clients = [];  // Clients subscribed to stock updates
+const clients = new Map(); // Key: stock symbol, Value: array of client response objects
 
 // Middleware
 const app = express();
@@ -91,13 +103,27 @@ app.get('/api/stock-updates/:ticker', (req, res) => {
         res.setHeader('Connection', 'keep-alive');
 
         // Add client to subscribed list
-        const newClient = { ticker, res };
-        clients.push(newClient);
-        // fetch from db, Push last price to the client
+        if (!clients.has(ticker)) {
+            clients.set(ticker, []);
+        }
+        const clientList = clients.get(ticker);
+        clientList.push(res);
+
+        //TODO: fetch Latest Stock from db, Push last price to the client
 
         // Remove client when connection closes
         req.on('close', () => {
-            clients = clients.filter((client) => client !== newClient);
+            const clientList = clients.get(ticker);
+            if (clientList) {
+                const index = clientList.indexOf(res);
+                if (index > -1) {
+                    clientList.splice(index, 1);
+                }
+                // Remove the stock from the map if there are no clients
+                if (clientList.length === 0) {
+                    clients.delete(ticker);
+                }
+            }
         });
     });
 });
@@ -111,16 +137,17 @@ async function sendStockUpdatesUsingSSE() {
     })
     const consumer = kafka.consumer({ groupId: 'stock-price-group' })
     await consumer.connect();
-    await consumer.subscribe({ topic: 'stock-price', fromBeginning: false });
+    const topics = Object.values(stockTopics);
+    await consumer.subscribe({ topics, fromBeginning: false });
 
     await consumer.run({
-        eachMessage: async ({ topic: _topic, partition: _partition, message }) => {
-            const stockPrice = JSON.parse(message.value.toString());
-            clients
-                .filter((client) => client.ticker === stockPrice.s)
-                .forEach((client) => {
-                    client.res.write(`data: ${JSON.stringify(stockPrice)}\n\n`);
+        eachMessage: async ({ topic, partition, message }) => {
+            const trade = JSON.parse(message.value.toString());
+            if (clients.has(trade.s)) {
+                clients.get(trade.s).forEach((client) => {
+                    client.write(`data: ${JSON.stringify(trade)}\n\n`);
                 });
+            }
         },
     });
 
