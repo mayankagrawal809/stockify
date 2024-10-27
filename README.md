@@ -46,12 +46,12 @@ cd frontend
 npm install
 ```
 4. Copy the .env.example file to .env file
-**(Linux/Mac)**
+- **(Linux/Mac)**
 ```bash
 cd ../backend
 cp .env.example .env
 ```
-**(Windows)**
+- **(Windows)**
 ```bash
 cd ../backend
 cp .env.example .env
