@@ -61,7 +61,7 @@ copy .env.example .env
 export HOST_IP=$(ifconfig | grep -E "([0-9]{1,3}\.){3}[0-9]{1,3}" | grep -v 127.0.0.1 | awk '{ print $2 }' | cut -f2 -d: | head -n1)
 docker-compose up
 ```
-5. **(Windows)** Use **POWERSHELL** for this: Start the docker app and run this command in powershell after going to backend folder to start kafka and zookeeper 
+5. **(Windows)** Use **PowerShell** for this: Start the Docker app and run this command in PowerShell after navigating to the backend folder to start Kafka and Zookeeper.
 ```bash
 $env:HOST_IP = (Get-NetIPAddress -AddressFamily IPv4 | Where-Object {$_.InterfaceAlias -notlike "*Loopback*"} | Select-Object -First 1 -ExpandProperty IPAddress)
 docker-compose up
