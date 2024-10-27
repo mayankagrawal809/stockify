@@ -54,7 +54,7 @@ cp .env.example .env
 - **(Windows)**
 ```bash
 cd ../backend
-cp .env.example .env
+copy .env.example .env
 ```
 5. **(Linux/Mac)** Start the docker app and run this command to start kafka and zookeeper
 ```bash
