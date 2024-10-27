@@ -34,7 +34,7 @@ export async function fetchAndPublishStockPrices() {
 
     if (!USE_FAKE_WEBSOCKET) {
         socket.addEventListener('open', function () {
-            stockTopics.forEach((symbol) => {
+            Object.keys(stockTopics).forEach((symbol) => {
                 socket.send(JSON.stringify({ type: 'subscribe', symbol }));
             });
         });
@@ -52,12 +52,15 @@ export async function fetchAndPublishStockPrices() {
         console.log('Received message:', message);
         if (message.type === 'trade' && Array.isArray(message.data)) {
             message.data.forEach(async (trade) => {
-                await producer.send({
-                    topic: stockTopics[trade.s],
-                    messages: [
-                        { value: JSON.stringify(trade) },
-                    ],
-                });
+                const topic = stockTopics[trade.s];
+                if (topic) {
+                    await producer.send({
+                        topic,
+                        messages: [
+                            { value: JSON.stringify(trade) },
+                        ],
+                    });
+                }
             });
         } else {
             console.warn("Received unexpected message format:", message);
