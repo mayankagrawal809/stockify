@@ -45,7 +45,7 @@ cd stockify
 cd frontend
 npm install
 ```
-4. Open a new terminal and then Copy the .env.example file to .env file
+4. Copy the .env.example file to .env file
 ```bash
 cd ../backend
 cp .env.example .env
