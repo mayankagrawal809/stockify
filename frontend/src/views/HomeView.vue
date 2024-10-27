@@ -42,8 +42,13 @@ export default defineComponent({
           headers: { Authorization: `Bearer ${token}` },
         });
         supportedStocks.value = response.data.stocks;
-      } catch (error) {
-        console.error('Error fetching supported stocks:', error);
+      } catch (error: any) {
+        if (error.response && error.response.status === 403) {
+          console.error('Unauthorized access, removing token');
+          localStorage.removeItem('jwt_token');
+        } else {
+          console.error('Error fetching supported stocks:', error);
+        }
       }
     };
 
