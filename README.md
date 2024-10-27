@@ -1,7 +1,7 @@
 # Stokify
 
 Stokify is a full-stack web application with a Vue.js frontend and a Node.js + Express backend. The main idea behind this app is to use SSE (Server-Sent Events) to stream stock prices in real-time. It uses Kafka as a message broker.
-You can get real stock prices for US Stock market too. If get a key from https://finnhub.io/register.
+You can get real stock prices for US Stock market too. If you get a key from https://finnhub.io/register.
 System Design: https://excalidraw.com/#json=hollRQ5FQVZ0-M7WUpUcs,GMoKSdkyZSbPKuRrRFkjiA
 
 
@@ -45,7 +45,7 @@ cd stockify
 cd frontend
 npm install
 ```
-4. Copy the .env.example file to .env file
+4. Open a new terminal and then Copy the .env.example file to .env file
 ```bash
 cd ../backend
 cp .env.example .env
