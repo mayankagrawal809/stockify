@@ -37,7 +37,6 @@ export async function fetchAndPublishStockPrices() {
 
     const producer = kafka.producer();
     await producer.connect();
-    console.log("Connected to Kafka broker");
     socket.addEventListener('message', function (event) {
         const message = JSON.parse(event.data);
         if (message.type === 'trade' && Array.isArray(message.data)) {

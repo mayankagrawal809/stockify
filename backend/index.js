@@ -185,7 +185,6 @@ async function updateDbWithStockPrices() {
     await consumer.run({
         eachMessage: async ({ topic, partition, message }) => {
             const trade = JSON.parse(message.value.toString());
-            console.log("Saving to db:", trade);
             await redisClient.set(trade.s, trade.p);
         },
     });
