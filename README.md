@@ -92,7 +92,7 @@ username: user2
 password: password2
 ```
 
-12. You can also get real stock prices for US Stock market too. If get a key from https://finnhub.io/register and add it to .env file in backend folder for e.g. FINNHUB_API_KEY= RandomKEy.
+12. You can also get real stock prices for US Stock market too. If get a key from https://finnhub.io/register and add it to .env file (.env is a hidden file) in backend folder for e.g. FINNHUB_API_KEY= RandomKEy.
 13. After that change code in `fetchStockUpdate.js` to `const USE_FAKE_WEBSOCKET = false`. around line number 6
 14. Restart both the backend and frontend server
 
