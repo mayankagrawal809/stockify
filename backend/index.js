@@ -5,7 +5,7 @@ import cors from 'cors';
 import { fetchAndPublishStockPrices } from './fetchStockUpdate.js';
 import { Kafka, logLevel } from 'kafkajs';
 import ip from 'ip';
-
+import { createClient } from 'redis';
 // Configuration
 const port = process.env.PORT || 3000;
 const JWT_SECRET = process.env.JWT_SECRET || '6F4D26CD5CCB494E8918D137C3CD5'; // Should be stored in .env file
@@ -23,6 +23,13 @@ const stockTopics = {
     'BINANCE:BNBBTC': 'BINANCE_BNBBTC',
 };
 const host = process.env.HOST_IP || ip.address()
+
+// Redis client
+const redisClient = createClient();
+redisClient.on('error', (err) => {
+    console.error('Redis error:', err);
+});
+await redisClient.connect();
 
 
 // In-memory data (In production, use a proper database)
@@ -95,7 +102,7 @@ app.get('/api/supported-stocks', authenticateToken, (req, res) => {
 app.get('/api/stock-updates/:ticker', (req, res) => {
     const token = req.query.token; // Token passed as a query parameter (EventSource doesn't support headers)
 
-    verifyToken(token, res, (user) => {
+    verifyToken(token, res, async (user) => {
         const ticker = req.params.ticker;
 
         res.setHeader('Content-Type', 'text/event-stream');
@@ -109,7 +116,9 @@ app.get('/api/stock-updates/:ticker', (req, res) => {
         const clientList = clients.get(ticker);
         clientList.push(res);
 
-        //TODO: fetch Latest Stock from db, Push last price to the client
+        const stockPrice = await redisClient.get(ticker);
+        res.write(`data: ${JSON.stringify(stockPrice)}\n\n`);
+
 
         // Remove client when connection closes
         req.on('close', () => {
@@ -145,7 +154,7 @@ async function sendStockUpdatesUsingSSE() {
             const trade = JSON.parse(message.value.toString());
             if (clients.has(trade.s)) {
                 clients.get(trade.s).forEach((client) => {
-                    client.write(`data: ${JSON.stringify(trade)}\n\n`);
+                    client.write(`data: ${trade.p}\n\n`);
                 });
             }
         },
@@ -155,9 +164,38 @@ async function sendStockUpdatesUsingSSE() {
 
 }
 
+async function seedRedisDB() {
+    const stocks = supportedStocks;
+    for (let i = 0; i < stocks.length; i++) {
+        const stock = stocks[i];
+        await redisClient.set(stock, '100');
+    }
+}
+
+async function updateDbWithStockPrices() {
+    const kafka = new Kafka({
+        brokers: [`${host}:9092`],
+        clientId: 'saving-to-db-consumer',
+    });
+    const consumer = kafka.consumer({ groupId: 'save-to-db-group' });
+    await consumer.connect();
+    const topics = Object.values(stockTopics);
+    await consumer.subscribe({ topics, fromBeginning: false });
+
+    await consumer.run({
+        eachMessage: async ({ topic, partition, message }) => {
+            const trade = JSON.parse(message.value.toString());
+            console.log("Saving to db:", trade);
+            await redisClient.set(trade.s, trade.p);
+        },
+    });
+}
+
+seedRedisDB();
 sendStockUpdatesUsingSSE();
-// Start fetching stock updates
 fetchAndPublishStockPrices();
+updateDbWithStockPrices();
+// Start fetching stock updates
 
 app.listen(port, () => {
     console.log(`Server is running on port ${port}`);

@@ -18,3 +18,8 @@ services:
       KAFKA_CREATE_TOPICS: "GOOGL:1:1,MSFT:1:1,NVDA:1:1,TSLA:1:1,AAPL:1:1,BINANCE_ETCBTC:1:1,BINANCE_BNBBTC:1:1,BINANCE_BTCUSDT:1:1"
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
+  redis:
+    image: redis:latest
+    container_name: redis  
+    ports:
+      - "6379:6379"  # Redis runs on port 6379 by default
