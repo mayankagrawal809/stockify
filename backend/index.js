@@ -140,7 +140,7 @@ app.get('/api/stock-updates/:ticker', (req, res) => {
 async function sendStockUpdatesUsingSSE() {
     const kafka = new Kafka({
         logLevel: logLevel.INFO,
-        brokers: [`${host}:9092`],
+        brokers: ['localhost:29092'],
         clientId: 'example-consumer',
     })
     const consumer = kafka.consumer({ groupId: 'stock-price-group' })
@@ -177,7 +177,7 @@ async function seedRedisDB() {
 // Each instance can be responsible for a subset of stocks
 async function updateDbWithStockPrices() {
     const kafka = new Kafka({
-        brokers: [`${host}:9092`],
+        brokers: ['localhost:29092'],
         clientId: 'saving-to-db-consumer',
     });
     const consumer = kafka.consumer({ groupId: 'save-to-db-group' });

@@ -41,7 +41,7 @@ export async function fetchAndPublishStockPrices() {
     }
 
     const kafka = new Kafka({
-        brokers: [`${host}:9092`],
+        brokers: ['localhost:29092'],
         clientId: 'example-producer',
     });
 

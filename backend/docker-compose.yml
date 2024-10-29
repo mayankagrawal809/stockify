@@ -1,25 +1,36 @@
-version: '2'
+# docker-compose.yml
+# docker compose file format version 
+version: '3'
+
 services:
+# Zookeeper service
   zookeeper:
-    image: wurstmeister/zookeeper:latest
-    ports:
-      - "2181:2181"
-  kafka:
-    image: wurstmeister/kafka:2.11-1.1.1
-    ports:
-      - "9092:9092"
-    links:
-      - zookeeper
+    container_name: zookeeper
+    image: confluentinc/cp-zookeeper:7.4.4
     environment:
-      KAFKA_ADVERTISED_HOST_NAME: ${HOST_IP}
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    ports:
+      - 22181:2181
+
+# Kafkaservice
+  kafka:
+    container_name: kafka
+    image: confluentinc/cp-kafka:7.4.4
+# Ensure that the kafka service start after the Zookeeper service started
+    depends_on:
+      - zookeeper
+    ports:
+      - 29092:29092
+    environment:
+      KAFKA_BROKER_ID: 1
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
-      KAFKA_AUTO_CREATE_TOPICS_ENABLE: 'true'
-      KAFKA_DELETE_TOPIC_ENABLE: 'true'
-      KAFKA_CREATE_TOPICS: "GOOGL:1:1,MSFT:1:1,NVDA:1:1,TSLA:1:1,AAPL:1:1,BINANCE_ETCBTC:1:1,BINANCE_BNBBTC:1:1,BINANCE_BTCUSDT:1:1"
-    volumes:
-      - /var/run/docker.sock:/var/run/docker.sock
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092,PLAINTEXT_HOST://localhost:29092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
   redis:
     image: redis:latest
     container_name: redis  
     ports:
-      - "6379:6379"  # Redis runs on port 6379 by default
+      - "6379:6379"  
