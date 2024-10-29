@@ -22,10 +22,25 @@ const createTopics = async () => {
         { topic: 'BINANCE_BTCUSDT', numPartitions: 1, replicationFactor: 1 },
     ];
 
-    await admin.createTopics({
-        topics: topicsToCreate,
+    const existingTopics = await admin.listTopics();
+
+    const topicsToActuallyCreate = topicsToCreate.filter(topicConfig => {
+        return !existingTopics.includes(topicConfig.topic);
     });
-    console.log('Topics created successfully - 📁');
+
+    if (topicsToActuallyCreate.length > 0) {
+        const created = await admin.createTopics({
+            topics: topicsToActuallyCreate,
+        });
+
+        if (created) {
+            console.log('Topics created successfully - 📁');
+        } else {
+            console.log('Some topics may not have been created. They might already exist.');
+        }
+    } else {
+        console.log('All topics already exist - 📁');
+    }
 
     await admin.disconnect();
     console.log('Disconnected from Kafka broker');

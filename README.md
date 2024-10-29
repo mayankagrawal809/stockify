@@ -56,21 +56,14 @@ cp .env.example .env
 cd ../backend
 copy .env.example .env
 ```
-5. **(Linux/Mac)** Start the docker app and run this command to start kafka and zookeeper
+5. Start the Docker app and run this command in terminal after navigating to the backend folder to start Kafka and Zookeeper.
 ```bash
-export HOST_IP=$(ifconfig | grep -E "([0-9]{1,3}\.){3}[0-9]{1,3}" | grep -v 127.0.0.1 | awk '{ print $2 }' | cut -f2 -d: | head -n1)
-docker-compose up
-```
-5. **(Windows)** Use **PowerShell** for this: Start the Docker app and run this command in PowerShell after navigating to the backend folder to start Kafka and Zookeeper.
-```bash
-$env:HOST_IP = (Get-NetIPAddress -AddressFamily IPv4 | Where-Object {$_.InterfaceAlias -notlike "*Loopback*"} | Select-Object -First 1 -ExpandProperty IPAddress)
-docker-compose up
+docker-compose up -d
 ```
 
-6. open a new terminal, don't close the previous terminal and run this command to install the backend dependencies
+6. Create kafka topic
 ```bash
-cd backend
-npm install
+node admin.js
 ```
 
 7. Start the backend server in development mode
